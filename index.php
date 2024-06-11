@@ -56,41 +56,48 @@ $listServer = $conn->query('SELECT * FROM `server`');
 $data = $listServer->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <div class="container">
+    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
+        <input type="search" class="form-control mb-3" placeholder="Tìm kiếm IP Local..." id="searchIpLocal" aria-label="Search IP Local">
+    </form>
+    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
+        <input type="search" class="form-control mb-3" placeholder="Tìm kiếm IP Public..." id="searchIpPublic" aria-label="Search IP Public">
+    </form>
+
     <div class="table-responsive small">
-        <table class="table table-striped table-sm">
-            <thead>
-                <tr>
-                    <th>id</th>
-                    <th>Server</th>
-                    <th>IP Public</th>
-                    <th>IP Local</th>
-                    <th>Cổng vật lý</th>
-                    <th>Firewall</th>
-                    <th>Switch</th>
-                    <th>Port Switch</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($data as $row): ?>
-                <tr>
-                    <td><?php echo ($row['id']); ?></td>
-                    <td><?php echo ($row['service']); ?></td>
-                    <td><?php echo ($row['ip_public']); ?></td>
-                    <td><?php echo ($row['ip_local']); ?></td>
-                    <td><?php echo ($row['physical_host']); ?></td>
-                    <td><?php echo ($row['firewall']); ?></td>
-                    <td><?php echo ($row['switch']); ?></td>
-                    <td><?php echo ($row['port_switch']); ?></td>
-                    <td><?php echo $row['status'] == 0 ? "Hoạt động" : "Không hoạt động"; ?></td>
-                    <td>
-                        <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm">Sửa</a>
-                        <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?php echo $row['id']; ?>">Xóa</button>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
+        <table class="table table-striped table-sm" id="serverTable">
+        <thead>
+        <tr>
+            <th data-sort="id">id</th>
+            <th data-sort="service">Service</th>
+            <th data-sort="ip_public">IP Public</th>
+            <th data-sort="ip_local">IP Local</th>
+            <th data-sort="physical_host">Cổng vật lý</th>
+            <th data-sort="firewall">Firewall</th>
+            <th data-sort="switch">Switch</th>
+            <th data-sort="port_switch">Port Switch</th>
+            <th data-sort="status">Trạng thái</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($data as $row): ?>
+        <tr>
+            <td data-col="id"><?php echo $row['id']; ?></td>
+            <td data-col="service"><?php echo $row['service']; ?></td>
+            <td data-col="ip_public"><?php echo $row['ip_public']; ?></td>
+            <td data-col="ip_local"><?php echo $row['ip_local']; ?></td>
+            <td data-col="physical_host"><?php echo $row['physical_host']; ?></td>
+            <td data-col="firewall"><?php echo $row['firewall']; ?></td>
+            <td data-col="switch"><?php echo $row['switch']; ?></td>
+            <td data-col="port_switch"><?php echo $row['port_switch']; ?></td>
+            <td data-col="status"><?php echo $row['status'] == 0 ? "Hoạt động" : "Không hoạt động"; ?></td>
+            <td>
+              <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm">Sửa</a>
+              <button class="btn btn-danger btn-sm delete-btn" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="<?php echo $row['id']; ?>">Xóa</button>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
         </table>
     </div>
 </div>
@@ -129,6 +136,74 @@ $data = $listServer->fetchAll(PDO::FETCH_ASSOC);
             deleteIdInput.value = serverId;
         });
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const headers = document.querySelectorAll('th[data-sort]');
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.getAttribute('data-sort');
+                sortTable(column);
+            });
+        });
+
+        let sortAscending = true; // Biến để lưu trạng thái hiện tại của sắp xếp
+
+        function sortTable(column) {
+            const table = document.getElementById('serverTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.getElementsByTagName('tr'));
+
+            rows.sort((a, b) => {
+                const aValue = a.querySelector(`td[data-col="${column}"]`).textContent;
+                const bValue = b.querySelector(`td[data-col="${column}"]`).textContent;
+                let result = 0;
+                
+                if (!isNaN(aValue) && !isNaN(bValue)) {
+                    result = aValue - bValue;
+                } else {
+                    result = aValue.localeCompare(bValue);
+                }
+
+                return sortAscending ? result : -result; // Sử dụng biến sortAscending để quyết định cách sắp xếp
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            sortAscending = !sortAscending; // Đảo ngược giá trị của biến sortAscending sau mỗi lần sắp xếp
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchIpLocalInput = document.getElementById('searchIpLocal');
+        const searchIpPublicInput = document.getElementById('searchIpPublic');
+
+        searchIpLocalInput.addEventListener('input', function() {
+            filterTable('ip_local', searchIpLocalInput.value);
+        });
+
+        searchIpPublicInput.addEventListener('input', function() {
+            filterTable('ip_public', searchIpPublicInput.value);
+        });
+
+        function filterTable(column, keyword) {
+            const table = document.getElementById('serverTable');
+            const tbody = table.querySelector('tbody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let row of rows) {
+                const cell = row.querySelector(`td[data-col="${column}"]`);
+                if (cell) {
+                    const text = cell.textContent || cell.innerText;
+                    const isVisible = text.toLowerCase().includes(keyword.toLowerCase());
+                    row.style.display = isVisible ? '' : 'none';
+                }
+            }
+        }
+    });
 </script>
+<style>
+  thead tr th:hover{
+    cursor: pointer;
+  }
+</style>
 </body>
 </html>
