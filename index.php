@@ -19,9 +19,6 @@
                 <li><a href="index.php" class="nav-link px-2 link-body-emphasis">Trang chủ</a></li>
                 <li><a href="add.php" class="nav-link px-2 link-body-emphasis">Thêm server</a></li>
             </ul>
-            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-                <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
-            </form>
 
             <div class="dropdown text-end">
                 <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
@@ -37,32 +34,38 @@
     </div>
 </header>
 <?php
-$conn = new PDO('sqlite:./database.sqlite');
-$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+include 'D:\Application\VSC\PHP_MVC\HAproxy\HAPROXY\includes\database.php';
 
 // Xóa server nếu có yêu cầu xóa từ form
 if (isset($_POST['delete_id'])) {
     $delete_id = $_POST['delete_id'];
-    $stmt = $conn->prepare('DELETE FROM `server` WHERE id = :id');
-    $stmt->bindParam(':id', $delete_id);
-    $stmt->execute();
-    header("Location: index.php"); // Chuyển hướng trở lại trang index sau khi xóa
-    exit();
+
+    // Sử dụng hàm delete từ database.php
+    $deleteResult = delete('`server`', 'id = ' . $delete_id);
+
+    if ($deleteResult) { // Kiểm tra nếu xóa thành công
+        header("Location: index.php"); // Chuyển hướng tới trang index
+        exit();
+    } else {
+        // Xử lý lỗi xóa (tuỳ chọn: hiển thị thông báo lỗi)
+        echo "Failed to delete server. Please try again.";
+    }
 }
 
-$listServer = $conn->query('SELECT * FROM `server`');
 
 // Lấy tất cả dữ liệu từ đối tượng PDOStatement
-$data = $listServer->fetchAll(PDO::FETCH_ASSOC);
+$listServer = getAll('SELECT * FROM `server`');
+
 ?>
 <div class="container">
-    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
+    <div class="row">
+    <form class="col-md-6 col-lg-auto mb-3 mb-lg-0 me-lg-3">
         <input type="search" class="form-control mb-3" placeholder="Tìm kiếm IP Local..." id="searchIpLocal" aria-label="Search IP Local">
     </form>
-    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
+    <form class="col-md-6 col-lg-auto mb-3 mb-lg-0 me-lg-3">
         <input type="search" class="form-control mb-3" placeholder="Tìm kiếm IP Public..." id="searchIpPublic" aria-label="Search IP Public">
     </form>
-
+    </div>
     <div class="table-responsive small">
         <table class="table table-striped table-sm" id="serverTable">
         <thead>
@@ -80,7 +83,7 @@ $data = $listServer->fetchAll(PDO::FETCH_ASSOC);
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($data as $row): ?>
+        <?php foreach ($listServer as $row): ?>
         <tr>
             <td data-col="id"><?php echo $row['id']; ?></td>
             <td data-col="service"><?php echo $row['service']; ?></td>
