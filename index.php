@@ -34,7 +34,7 @@
     </div>
 </header>
 <?php
-include 'D:\Application\VSC\PHP_MVC\HAproxy\HAPROXY\includes\database.php';
+include './includes/database.php';
 
 // Xóa server nếu có yêu cầu xóa từ form
 if (isset($_POST['delete_id'])) {

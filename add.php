@@ -37,7 +37,7 @@
     </div>
 </header>
 <?php
-include 'D:\Application\VSC\PHP_MVC\HAproxy\HAPROXY\includes\database.php';
+include './includes/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dataInsert = [

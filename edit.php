@@ -38,7 +38,7 @@
 </header>
 
 <?php
-include 'D:\Application\VSC\PHP_MVC\HAproxy\HAPROXY\includes\database.php';
+include './includes/database.php';
 
 // Xử lý chỉnh sửa thông tin server
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

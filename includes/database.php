@@ -1,5 +1,5 @@
 <?php
-$conn = new PDO('sqlite:D:\Application\VSC\PHP_MVC\HAproxy\HAPROXY\data\database.sqlite');
+$conn = new PDO('sqlite:'.$_SERVER['DOCUMENT_ROOT'].'/HAPROXY/data/database.sqlite');
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 function query($sql, $data = [],$check = false){
     global $conn;
